@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <!-- iPhone / mobile optimization -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>QR Dial Pad</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: #f2f2f7;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "SF Pro Display", "SF Pro Text",
+                         Helvetica, Arial, sans-serif;
+            color: #111;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100dvh;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100dvh;
+            padding:
+                max(20px, env(safe-area-inset-top))
+                18px
+                max(20px, env(safe-area-inset-bottom))
+                18px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------------- QR DISPLAY ---------------- */
+
+        .qr-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 300px;
+            margin-bottom: 12px;
+        }
+
+        #qrcode {
+            width: 240px;
+            height: 240px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
+
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+
+        .placeholder {
+            color: #8e8e93;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        /* ---------------- INPUT DISPLAY ---------------- */
+
+        .number-display {
+            width: 100%;
+            height: 58px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 14px;
+
+            background: white;
+            border-radius: 16px;
+
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 10px;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .number-display.empty {
+            color: #c7c7cc;
+            letter-spacing: 3px;
+        }
+
+        /* ---------------- DIAL PAD ---------------- */
+
+        .dial-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+
+            width: 100%;
+        }
+
+        .key {
+            border: none;
+            outline: none;
+
+            height: 68px;
+            border-radius: 18px;
+
+            background: white;
+
+            font-size: 28px;
+            font-weight: 500;
+
+            color: #111;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.06);
+
+            touch-action: manipulation;
+
+            transition:
+                transform 0.08s ease,
+                background 0.08s ease;
+        }
+        .xkey {
+            border: none;
+            outline: none;
+
+            height: 68px;
+            border-radius: 18px;
+
+            background: rgb(7, 7, 7);
+
+            font-size: 28px;
+            font-weight: 500;
+
+            color: #fbf8f8;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.06);
+
+            touch-action: manipulation;
+
+            transition:
+                transform 0.08s ease,
+                background 0.08s ease;
+        }
+
+        .key:active {
+            transform: scale(0.94);
+            background: #e5e5ea;
+        }
+        .xkey:active {
+            transform: scale(0.94);
+            background: #484848;
+        }
+
+        .key .sub {
+            display: block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #8e8e93;
+            margin-top: -2px;
+        }
+
+        .xkey .sub{
+            display: block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            background-color: #111;
+            color: #f5f1f1;
+            margin-top: -2px;
+            font-color: rgb(240, 236, 236);
+        }
+        /* ---------------- BOTTOM BUTTONS ---------------- */
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+
+            margin-top: 12px;
+        }
+
+        .action-button {
+            height: 58px;
+
+            border: none;
+            border-radius: 18px;
+
+            font-size: 18px;
+            font-weight: 600;
+
+            touch-action: manipulation;
+        }
+
+        .clear {
+            background: #d1d1d6;
+            color: #111;
+        }
+
+        .enter {
+            background: #007aff;
+            color: white;
+        }
+
+        .action-button:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        /* Prevent accidental text selection */
+        button,
+        .number-display {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @media (max-height: 700px) {
+            .qr-area {
+                min-height: 220px;
+            }
+
+            #qrcode {
+                width: 180px;
+                height: 180px;
+            }
+
+            .key .xkey {
+                height: 58px;
+            }
+
+            .number-display {
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- QR CODE -->
+     <h1 id="message"></h1>
+    <div class="qr-area">
+        <div id="qrcode">
+            <div class="placeholder">
+                Enter The Aisle Number followed by the bag number.
+                [No space]
+                eg. X665
+            </div>
+        </div>
+    </div>
+
+    <!-- CURRENT NUMBER -->
+    <div id="numberDisplay"
+         class="number-display empty">
+        ---
+    </div>
+
+    <!-- DIAL PAD -->
+    <div class="dial-pad">
+
+        <button class="key" onclick="pressDigit('1')">
+            1
+        </button>
+
+        <button class="key" onclick="pressDigit('2')">
+            2
+        </button>
+
+        <button class="key" onclick="pressDigit('3')">
+            3
+        </button>
+
+        <button class="key" onclick="pressDigit('4')">
+            4
+        </button>
+
+        <button class="key" onclick="pressDigit('5')">
+            5
+        </button>
+
+        <button class="key" onclick="pressDigit('6')">
+            6
+        </button>
+
+        <button class="key" onclick="pressDigit('7')">
+            7
+        </button>
+
+        <button class="key" onclick="pressDigit('8')">
+            8
+        </button>
+
+        <button class="key" onclick="pressDigit('9')">
+            9
+        </button>
+
+        <button class="key" onclick="pressDigit('0')">
+            0
+        </button>
+
+        <button class="xkey" onclick="pressDigit('X')">
+            X
+        </button>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div class="actions">
+
+        <button class="action-button clear"
+                onclick="clearInput()">
+            Clear
+        </button>
+
+        <button class="action-button enter"
+                onclick="enterNumber()">
+            Enter
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    // Current 3-digit input
+    let currentInput = "";
+
+
+    // -----------------------------------------
+    // PRESS A NUMBER
+    // -----------------------------------------
+
+    function pressDigit(digit) {
+
+        // Don't allow more than 3 digits
+        //if (currentInput.length >= 3) {
+        //    return;
+        //}
+
+        currentInput += digit;
+
+        updateDisplay();
+
+
+        // Automatically create QR after 3rd digit
+        //if (currentInput.length === 3) {
+
+        //    generateQR(currentInput);
+
+            // Small delay makes the entered number
+            // visible before automatically clearing it.
+        //    setTimeout(() => {
+        //        currentInput = "";
+        //        updateDisplay();
+        //    }, 250);
+        //}
+    }
+
+
+    // -----------------------------------------
+    // UPDATE NUMBER DISPLAY
+    // -----------------------------------------
+
+    function updateDisplay() {
+
+        const display =
+            document.getElementById("numberDisplay");
+
+        if (currentInput.length === 0) {
+
+            display.textContent = "---";
+            display.classList.add("empty");
+
+        } else {
+
+            display.textContent = currentInput;
+            display.classList.remove("empty");
+        }
+    }
+
+
+    // -----------------------------------------
+    // ENTER BUTTON
+    // -----------------------------------------
+
+    function enterNumber() {
+
+        // Only generate if exactly 3 digits exist
+        //if (currentInput.length !== 3) {
+        //    return;
+        //}
+
+        generateQR(currentInput);
+
+        currentInput = "";
+
+        updateDisplay();
+    }
+
+
+    // -----------------------------------------
+    // CLEAR BUTTON
+    // -----------------------------------------
+
+    function clearInput() {
+
+        currentInput = "";
+
+        updateDisplay();
+    }
+
+
+    // -----------------------------------------
+    // GENERATE QR CODE
+    // -----------------------------------------
+
+    function generateQR(value) {
+        const today = new Date();
+
+        const date =
+        today.getFullYear() + "-" +
+        String(today.getMonth() + 1).padStart(2, "0") + "-" +
+        String(today.getDate()).padStart(2, "0");
+        
+        const qrContainer =
+            document.getElementById("qrcode");
+        const message = document.getElementById("message");
+
+        // Remove previous QR
+        qrContainer.innerHTML = "";
+
+        // Generate new QR
+        new QRCode(qrContainer, {
+            text: "SEAL,"+value+","+date,
+
+            width: 216,
+            height: 216,
+
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
+        message.innerHTML = "Seal QR for "+value;
+    }
+
+
+    // -----------------------------------------
+    // INITIAL DISPLAY
+    // -----------------------------------------
+
+    updateDisplay();
+
+</script>
+
+</body>
+</html>
