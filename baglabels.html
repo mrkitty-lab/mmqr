@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1,
+                   maximum-scale=1,
+                   user-scalable=no">
+
+    <title>Bag Labels Reprint tool</title>
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- PDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+
+            background: #fbf7fe;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "SF Pro Display",
+                Arial,
+                sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 10px 0 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 20px;
+
+            box-shadow:
+                0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        label {
+            display: block;
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            height: 60px;
+
+            border: 1px solid #d1d1d6;
+            border-radius: 14px;
+
+            padding: 0 16px;
+
+            font-size: 22px;
+            text-align: center;
+
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #007aff;
+        }
+
+        button {
+            width: 100%;
+            height: 60px;
+
+            margin-top: 16px;
+
+            border: none;
+            border-radius: 14px;
+
+            background: purple;
+            color: white;
+
+            font-size: 19px;
+            font-weight: 600;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.8;
+        }
+
+        .preview {
+            margin-top: 25px;
+
+            text-align: center;
+
+            background: #f2f2f7;
+            padding: 20px;
+            border-radius: 16px;
+        }
+
+        .preview-name {
+            font-size: 42px;
+            font-weight: 900;
+        }
+
+        .preview-number {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        #qrPreview {
+            display: flex;
+            justify-content: center;
+        }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            color: #666;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>Bag Label Reprint tool.</h1>
+
+    <div class="card">
+
+        <label for="bagNumber">
+            Enter Bag Number
+        </label>
+
+        <input
+            id="bagNumber"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            autocapitalize="characters"
+            placeholder="RELA455A3MOP"
+        >
+
+        <button onclick="generatePDF()">
+            Generate 6 Labels
+        </button>
+
+
+        <div class="preview">
+
+            <div id="previewName"
+                 class="preview-name">
+                ----
+            </div>
+
+            <div id="previewNumber"
+                 class="preview-number">
+                Bag number
+            </div>
+
+            <div id="qrPreview"></div>
+
+        </div>
+
+
+        <div id="message"
+             class="message">
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+
+/*
+==================================================
+GET BAG NAME
+==================================================
+
+Example:
+
+RELA455A3MOP
+
+Characters:
+
+R E L A 4 5 5 A 3 M O P
+            ↑ ↑ ↑ ↑
+            5 5 A 3
+
+Result:
+
+55A3
+*/
+
+function getBagName(bagNumber) {
+
+    if (bagNumber.length < 8) {
+        return "";
+    }
+
+    // For RELA455A3MOP:
+    //
+    // Start at character 5
+    // Take 4 characters
+    let chop = bagNumber.slice(0,-3);
+    return chop.slice(-4);
+}
+
+
+
+/*
+==================================================
+INPUT
+==================================================
+*/
+
+const bagInput =
+    document.getElementById("bagNumber");
+
+
+bagInput.addEventListener(
+    "input",
+    updatePreview
+);
+
+
+
+/*
+==================================================
+PREVIEW
+==================================================
+*/
+
+function updatePreview() {
+
+    const bagNumber =
+        bagInput.value.trim().toUpperCase();
+
+
+    const name =
+        getBagName(bagNumber);
+
+
+    document.getElementById(
+        "previewName"
+    ).textContent =
+        name || "----";
+
+
+    document.getElementById(
+        "previewNumber"
+    ).textContent =
+        bagNumber || "Bag number";
+
+
+    const qrPreview =
+        document.getElementById("qrPreview");
+
+
+    qrPreview.innerHTML = "";
+
+
+    if (!bagNumber) {
+        return;
+    }
+
+
+    new QRCode(qrPreview, {
+
+        text: bagNumber,
+
+        width: 220,
+        height: 220,
+
+        correctLevel:
+            QRCode.CorrectLevel.M
+
+    });
+
+}
+
+
+
+/*
+==================================================
+GENERATE PDF
+==================================================
+*/
+
+async function generatePDF() {
+
+    const bagNumber =
+        bagInput.value.trim().toUpperCase();
+
+
+    if (!bagNumber) {
+
+        alert(
+            "Please enter a bag number."
+        );
+
+        bagInput.focus();
+
+        return;
+    }
+
+
+    const name =
+        getBagName(bagNumber);
+
+
+    if (!name) {
+
+        alert(
+            "Invalid bag number."
+        );
+
+        return;
+    }
+
+
+    document.getElementById(
+        "message"
+    ).textContent =
+        "Creating PDF...";
+
+
+    /*
+    ----------------------------------------------
+    CREATE LARGE QR
+    ----------------------------------------------
+    */
+
+    const tempQR =
+        document.createElement("div");
+
+
+    tempQR.style.position =
+        "absolute";
+
+    tempQR.style.left =
+        "-9999px";
+
+
+    document.body.appendChild(tempQR);
+
+
+    new QRCode(tempQR, {
+
+        text: bagNumber,
+
+        width: 1000,
+        height: 1000,
+
+        correctLevel:
+            QRCode.CorrectLevel.M
+
+    });
+
+
+    await new Promise(resolve => {
+
+        setTimeout(resolve, 100);
+
+    });
+
+
+    const qrCanvas =
+        tempQR.querySelector("canvas");
+
+
+    if (!qrCanvas) {
+
+        alert(
+            "Unable to generate QR code."
+        );
+
+        tempQR.remove();
+
+        return;
+    }
+
+
+    const qrImage =
+        qrCanvas.toDataURL(
+            "image/png"
+        );
+
+
+
+    /*
+    ==================================================
+    PDF
+    ==================================================
+
+    Physical size:
+
+    Width  = 4 inches
+    Height = 6 inches
+
+    Converted to mm:
+
+    4 × 25.4 = 101.6mm
+    6 × 25.4 = 152.4mm
+    */
+
+    const {
+        jsPDF
+    } = window.jspdf;
+
+
+    const pdf =
+        new jsPDF({
+
+            orientation: "portrait",
+
+            unit: "mm",
+
+            format: [
+                101.6,
+                152.4
+            ]
+
+        });
+
+
+
+    /*
+    ==================================================
+    CREATE SIX LABELS
+    ==================================================
+    */
+
+    for (
+        let page = 0;
+        page < 6;
+        page++
+    ) {
+
+
+        if (page > 0) {
+
+            pdf.addPage(
+                [101.6, 152.4],
+                "portrait"
+            );
+
+        }
+
+
+
+        /*
+        ----------------------------------------------
+        BAG NAME
+        ----------------------------------------------
+
+        VERY LARGE
+        */
+
+        pdf.setFont(
+            "helvetica",
+            "bold"
+        );
+
+
+        pdf.setFontSize(64);
+
+
+        pdf.text(
+
+            name,
+
+            50.8,
+
+            32,
+
+            {
+                align: "center"
+            }
+
+        );
+
+
+
+        /*
+        ----------------------------------------------
+        QR CODE
+        ----------------------------------------------
+
+        Very large.
+
+        Approximately:
+
+        90mm × 90mm
+
+        This occupies most of
+        the label.
+        */
+
+        const pageWidth = 101.6;
+        const qrSize = 80;
+
+        const qrX = (pageWidth - qrSize) / 2;
+
+        pdf.addImage(
+            qrImage,
+            "PNG",
+            qrX,
+            50,
+            qrSize,
+            qrSize
+        );
+
+
+
+        /*
+        ----------------------------------------------
+        FULL BAG NUMBER
+        ----------------------------------------------
+
+        Small and discreet.
+        */
+
+        pdf.setFont(
+            "helvetica",
+            "normal"
+        );
+
+
+        pdf.setFontSize(15);
+
+
+        pdf.text(
+
+            bagNumber,
+
+            50.8,
+
+           40,
+
+            {
+                align: "center"
+            }
+
+        );
+
+
+
+    }
+
+
+
+    /*
+    ==================================================
+    DOWNLOAD
+    ==================================================
+    */
+
+    const safeName =
+        bagNumber.replace(
+            /[^a-zA-Z0-9_-]/g,
+            "_"
+        );
+
+
+    pdf.save(
+        "Bag_" +
+        safeName +
+        "_Labels.pdf"
+    );
+
+
+    tempQR.remove();
+
+
+    document.getElementById(
+        "message"
+    ).textContent =
+        "6-label PDF created.";
+
+}
+
+
+
+/*
+==================================================
+ENTER KEY
+==================================================
+*/
+
+bagInput.addEventListener(
+    "keydown",
+    function(event) {
+
+        if (event.key === "Enter") {
+
+            generatePDF();
+
+        }
+
+    }
+);
+
+
+</script>
+
+</body>
+
+</html>
+```
