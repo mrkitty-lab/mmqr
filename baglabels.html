@@ -18,7 +18,7 @@
 
     <!-- PDF Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <style>
 
         * {
@@ -414,6 +414,34 @@ async function generatePDF() {
         );
 
 
+    const barcodeCanvas =
+    document.createElement("canvas");
+
+
+    JsBarcode(
+        barcodeCanvas,
+        bagNumber,
+        {
+            format: "CODE128",
+
+            width: 3,
+
+            height: 120,
+
+            displayValue: true,
+
+            fontSize: 24,
+
+            margin: 10
+        }
+    );
+
+
+    const barcodeImage =
+        barcodeCanvas.toDataURL(
+            "image/png"
+        );
+
 
     /*
     ==================================================
@@ -490,7 +518,7 @@ async function generatePDF() {
         );
 
 
-        pdf.setFontSize(64);
+        pdf.setFontSize(82);
 
 
         pdf.text(
@@ -499,7 +527,7 @@ async function generatePDF() {
 
             50.8,
 
-            32,
+            35,
 
             {
                 align: "center"
@@ -525,20 +553,53 @@ async function generatePDF() {
         */
 
         const pageWidth = 101.6;
-        const qrSize = 80;
+        const qrSize = 30;
 
         const qrX = (pageWidth - qrSize) / 2;
 
         pdf.addImage(
             qrImage,
             "PNG",
-            qrX,
-            50,
+            (qrX-35)+10,
+            55,
             qrSize,
             qrSize
         );
-
-
+        pdf.addImage(
+            qrImage,
+            "PNG",
+            qrX+10,
+            55,
+            qrSize,
+            qrSize
+        );
+        pdf.addImage(
+            qrImage,
+            "PNG",
+            (qrX-35)+10,
+            90,
+            qrSize,
+            qrSize
+        );
+        pdf.addImage(
+            qrImage,
+            "PNG",
+            qrX+10,
+            90,
+            qrSize,
+            qrSize
+        );
+        pdf.addImage(
+            barcodeImage,
+            "PNG",
+            95,
+            106,
+            65,
+            13,
+            undefined,
+            "NONE",
+            90
+        );
 
         /*
         ----------------------------------------------
@@ -563,7 +624,7 @@ async function generatePDF() {
 
             50.8,
 
-           40,
+           45,
 
             {
                 align: "center"
@@ -572,10 +633,70 @@ async function generatePDF() {
         );
 
 
+        /*Page Nummber*/
+        pdf.setFont(
+            "helvetica",
+            "bold"
+        );
+
+
+        pdf.setFontSize(24);
+
+
+        pdf.text(
+
+           String(page + 1),
+
+            50.8,
+
+           140,
+
+            {
+                align: "center"
+            }
+
+        );
+
 
     }
 
+    // ==========================================
+// FINAL DAMAGED BAG LABEL
+// ==========================================
 
+    pdf.addPage(
+        [101.6, 152.4],
+        "portrait"
+    );
+
+    pdf.setFont(
+        "helvetica",
+        "bold"
+    );
+
+    pdf.setFontSize(32);
+
+
+    // First line
+    pdf.text(
+        "DAMAGED BAG!",
+        50.8,
+        65,
+        {
+            align: "center"
+        }
+    );
+
+
+    // Second line
+    pdf.text(
+        "DO NOT USE",
+        50.8,
+        100,
+        {
+            align: "center"
+        }
+    );
 
     /*
     ==================================================
@@ -634,4 +755,3 @@ bagInput.addEventListener(
 </body>
 
 </html>
-```
