@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width,
+                   initial-scale=1,
+                   maximum-scale=1,
+                   user-scalable=no">
+
+    <title>Extra Tools for Relay</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100dvh;
+
+            background: #fbf7fe;
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "SF Pro Display",
+                "SF Pro Text",
+                Arial,
+                sans-serif;
+
+            display: flex;
+            justify-content: center;
+        }
+
+
+        .container {
+
+            width: 100%;
+            max-width: 430px;
+
+            min-height: 100dvh;
+
+            padding:
+                40px 20px
+                max(30px, env(safe-area-inset-bottom))
+                20px;
+
+            display: flex;
+            flex-direction: column;
+
+        }
+
+
+        /* --------------------------------
+           HEADER
+        -------------------------------- */
+
+        .header {
+            text-align: center;
+
+            margin-bottom: 35px;
+        }
+
+
+        .header h1 {
+
+            margin: 0;
+
+            font-size: 32px;
+            font-weight: 800;
+
+            color: #111;
+
+        }
+
+
+        .header p {
+
+            margin-top: 8px;
+
+            font-size: 16px;
+
+            color: #8e8e93;
+
+        }
+
+
+        /* --------------------------------
+           MENU
+        -------------------------------- */
+
+        .menu {
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 16px;
+
+        }
+
+
+        .menu-button {
+
+            display: flex;
+
+            align-items: center;
+
+            width: 100%;
+
+            min-height: 82px;
+
+            padding: 18px 20px;
+
+            background: white;
+
+            border-radius: 20px;
+
+            text-decoration: none;
+
+            color: #111;
+
+            box-shadow:
+                0 3px 15px
+                rgba(0, 0, 0, 0.07);
+
+            transition:
+                transform 0.1s ease,
+                background 0.1s ease;
+
+        }
+
+
+        .menu-button:active {
+
+            transform: scale(0.97);
+
+            background: #e5e5ea;
+
+        }
+
+
+        /* --------------------------------
+           ICON
+        -------------------------------- */
+
+        .icon {
+
+            width: 52px;
+            height: 52px;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            margin-right: 16px;
+
+            background: #f2f2f7;
+
+            border-radius: 15px;
+
+            font-size: 27px;
+
+        }
+
+
+        /* --------------------------------
+           TEXT
+        -------------------------------- */
+
+        .button-text {
+
+            flex: 1;
+
+        }
+
+
+        .button-title {
+
+            font-size: 20px;
+
+            font-weight: 700;
+
+        }
+
+
+        .button-description {
+
+            margin-top: 4px;
+
+            font-size: 14px;
+
+            color: #8e8e93;
+
+        }
+
+
+        /* --------------------------------
+           ARROW
+        -------------------------------- */
+
+        .arrow {
+
+            font-size: 25px;
+
+            color: #c7c7cc;
+
+        }
+
+
+        /* --------------------------------
+           FOOTER
+        -------------------------------- */
+
+        .footer {
+
+            margin-top: auto;
+
+            padding-top: 40px;
+
+            text-align: center;
+
+            font-size: 13px;
+
+            color: #8e8e93;
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>Extra Tools for Relay</h1>
+
+        <p>Select an option</p>
+
+    </div>
+
+
+
+    <!-- MENU -->
+
+    <div class="menu">
+
+
+        <!-- MM QR -->
+
+        <a
+            class="menu-button"
+            href="https://mrkitty-lab.github.io/mmqr/middlemileQR.HTML">
+
+            <div class="icon">
+                ◼️
+            </div>
+
+            <div class="button-text">
+
+                <div class="button-title">
+                    MM QR
+                </div>
+
+                <div class="button-description">
+                    Generate MM QR codes
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </a>
+
+
+
+        <!-- SEAL LABELS -->
+
+        <a
+            class="menu-button"
+            href="https://mrkitty-lab.github.io/mmqr/seal.HTML">
+
+            <div class="icon">
+                🏷️
+            </div>
+
+            <div class="button-text">
+
+                <div class="button-title">
+                    Seal Labels
+                </div>
+
+                <div class="button-description">
+                    Create and print seal labels
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </a>
+
+
+
+        <!-- BAG LABEL REPRINT -->
+
+        <a
+            class="menu-button"
+            href="https://mrkitty-lab.github.io/mmqr/baglabels.html">
+
+            <div class="icon">
+                📦
+            </div>
+
+            <div class="button-text">
+
+                <div class="button-title">
+                    Bag Label Reprint
+                </div>
+
+                <div class="button-description">
+                    Reprint existing bag labels
+                </div>
+
+            </div>
+
+            <div class="arrow">
+                ›
+            </div>
+
+        </a>
+
+
+    </div>
+
+
+
+    <!-- FOOTER -->
+
+    <div class="footer">
+
+        Extra Tools for Relay | Developed by mrkitty-lab
+
+    </div>
+
+
+</div>
+
+
+</body>
+
+</html>
+```
