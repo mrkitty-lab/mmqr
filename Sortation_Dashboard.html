@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sortation Session Planner</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #1f3b57, #050816);
+      color: #f4f4f5;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 20px;
+      padding: 24px 28px 32px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 26px;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #a5b4fc;
+      margin-top: 4px;
+    }
+
+    .tag {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(94, 234, 212, 0.6);
+      background: radial-gradient(circle at top left, rgba(45, 212, 191, 0.2), transparent);
+      color: #e0f2fe;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 64, 175, 0.85));
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.7);
+    }
+
+    .card h3 {
+      font-size: 12px;
+      font-weight: 500;
+      color: #cbd5f5;
+      margin-bottom: 6px;
+    }
+
+    .card .value {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .card .delta {
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .delta.positive {
+      color: #4ade80;
+    }
+
+    .delta.negative {
+      color: #f97373;
+    }
+
+    .progress-wrapper {
+      margin: 10px 0 22px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #e5e7eb;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(30, 64, 175, 0.5);
+      overflow: hidden;
+      border: 1px solid rgba(129, 140, 248, 0.7);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #22c55e, #eab308, #ef4444);
+      transition: width 0.3s ease;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+      font-size: 13px;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    th, td {
+      padding: 9px 8px;
+      text-align: right;
+      border-bottom: 1px solid rgba(55, 65, 81, 0.8);
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+    }
+
+    th:nth-child(2), td:nth-child(2) {
+      text-align: center;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    tbody tr:nth-child(odd) {
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    tbody tr:hover {
+      background: rgba(37, 99, 235, 0.35);
+    }
+
+    .break-row {
+      background: rgba(15, 23, 42, 0.2) !important;
+      color: #9ca3af;
+      font-style: italic;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 5px 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      color: #f4f4f5;
+      font-size: 12px;
+      text-align: right;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.4);
+    }
+
+    .variance-positive {
+      color: #4ade80;
+      font-weight: 500;
+    }
+    .variance-negative {
+      color: #f87171;
+      font-weight: 500;
+    }
+    .variance-neutral {
+      color: #e5e7eb;
+    }
+
+    .footer-note {
+      margin-top: 10px;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 900px) {
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 12px;
+      }
+      .container {
+        padding: 16px;
+      }
+      header {
+        flex-direction: column;
+        gap: 10px;
+      }
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+      table {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div>
+      <h1>Sortation Session Planner</h1>
+      <p class="subtitle">Live performance vs plan for volume sorted</p>
+    </div>
+    <div style="text-align:right;">
+      <div class="tag" id="currentDateTag">Today</div>
+    </div>
+  </header>
+
+  <section class="metrics">
+    <div class="card">
+      <h3>Total Planned Volume</h3>
+      <div class="value" id="totalPlanned">0</div>
+      <div class="delta">Updatable per time slot</div>
+    </div>
+    <div class="card">
+      <h3>Total Actual Volume Sorted</h3>
+      <div class="value" id="totalActual">0</div>
+      <div class="delta">Based on manual inputs</div>
+    </div>
+    <div class="card">
+      <h3>Gap vs Plan</h3>
+      <div class="value" id="totalGap">0</div>
+      <div class="delta" id="totalGapDelta">–</div>
+    </div>
+    <div class="card">
+      <h3>Attainment %</h3>
+      <div class="value" id="attainmentPercent">0%</div>
+      <div class="delta">Target ≥ 100%</div>
+    </div>
+  </section>
+
+  <div class="progress-wrapper">
+    <div class="progress-label">
+      <span>Overall progress vs plan</span>
+      <span id="progressLabel">0%</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+    <tr>
+      <th>Time</th>
+      <th>TPH (manual)</th>
+      <th>Planned Volume (cumulative)</th>
+      <th>Actual Volume Sorted</th>
+      <th>Gap (Actual − Planned)</th>
+      <th>Attainment %</th>
+    </tr>
+    </thead>
+    <tbody id="plannerBody">
+    <!-- Rows injected by JS -->
+    </tbody>
+  </table>
+
+  <p class="footer-note">
+    Edit <strong>TPH</strong>, <strong>Planned Volume</strong> or <strong>Actual Volume Sorted</strong> for each slot.
+    The dashboard recalculates gaps and attainment automatically.
+  </p>
+</div>
+
+<script>
+  // Time slots: 20:30 to 04:00
+  const rowsConfig = [
+    { time: "20:30" },
+    { time: "21:00" },
+    { time: "22:00" },
+    { time: "23:00" },
+    { time: "00:00" },
+    { time: "01:00" },
+    { time: "02:00" },
+    { time: "03:00" },
+    { time: "04:00" }
+  ];
+
+  const plannerBody = document.getElementById("plannerBody");
+
+  function formatNumber(num) {
+    return num.toLocaleString("en-GB");
+  }
+
+  function buildTable() {
+    rowsConfig.forEach((row, index) => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${row.time}</td>
+        <td>
+          <input type="number" min="0" step="50"
+                 data-type="tph" data-index="${index}">
+        </td>
+        <td>
+          <input type="number" min="0" step="100"
+                 data-type="planned" data-index="${index}">
+        </td>
+        <td>
+          <input type="number" min="0" step="1"
+                 data-type="actual" data-index="${index}">
+        </td>
+        <td class="variance-neutral" data-type="gap" data-index="${index}">0</td>
+        <td data-type="percent" data-index="${index}">0%</td>
+      `;
+
+      plannerBody.appendChild(tr);
+    });
+  }
+
+  function recalc() {
+    let totalPlanned = 0;
+    let totalActual = 0;
+
+    
+      xx = [...document.querySelectorAll('input[data-type="planned"]')]
+    .filter(input => input.value.trim() !== '')
+  .sort((a, b) => Number(a.dataset.index) - Number(b.dataset.index))
+  .at(-1);
+
+      totalPlanned = xx?.value;
+      console.log(totalPlanned);
+    if (totalPlanned != 0){
+      const endVolumeIndex = xx?.dataset.index;
+      console.log(endVolumeIndex);
+      let input = document.querySelector(`input[data-type="planned"][data-index="${endVolumeIndex - 4 < 0 ? 0 : endVolumeIndex - 4}"]`);
+      input.value =  Math.round(totalPlanned * 1/4);
+      input = document.querySelector(`input[data-type="planned"][data-index="${endVolumeIndex - 3 < 0 ? 0 : endVolumeIndex - 3}"]`);;
+      input.value =  Math.round(totalPlanned * 1/2);
+      input = document.querySelector(`input[data-type="planned"][data-index="${endVolumeIndex - 2 < 0 ? 0 : endVolumeIndex - 2}"]`);
+      input.value =  Math.round(totalPlanned * (3/4));
+      input = document.querySelector(`input[data-type="planned"][data-index="${endVolumeIndex - 1 < 0 ? 0 : endVolumeIndex - 1}"]`);
+      input.value =  Math.round(totalPlanned * (1/12 + 3/4));
+      input = document.querySelector(`input[data-type="planned"][data-index="${endVolumeIndex}"]`);
+      input.value =  Math.round(totalPlanned);
+    }
+    rowsConfig.forEach((row, index) => {
+      const plannedInput = document.querySelector(`input[data-type="planned"][data-index="${index}"]`);
+      const actualInput = document.querySelector(`input[data-type="actual"][data-index="${index}"]`);
+      const gapCell = document.querySelector(`td[data-type="gap"][data-index="${index}"]`);
+      const percentCell = document.querySelector(`td[data-type="percent"][data-index="${index}"]`);
+
+      const planned = Number(plannedInput.value) || 0;
+      const actual = Number(actualInput.value) || 0;
+
+      // Treat values as cumulative – latest non-zero is the session total
+      totalPlanned = Math.max(totalPlanned, planned);
+      totalActual = Math.max(totalActual, actual);
+
+      const gap = actual - planned;
+      const attainment = planned > 0 ? (actual / planned) * 100 : 0;
+
+      gapCell.textContent = formatNumber(gap);
+      gapCell.classList.remove("variance-positive", "variance-negative", "variance-neutral");
+      if (gap > 0) {
+        gapCell.classList.add("variance-positive");
+      } else if (gap < 0) {
+        gapCell.classList.add("variance-negative");
+      } else {
+        gapCell.classList.add("variance-neutral");
+      }
+
+      percentCell.textContent = planned > 0 ? attainment.toFixed(1) + "%" : "–";
+    });
+
+    document.getElementById("totalPlanned").textContent = formatNumber(totalPlanned);
+    document.getElementById("totalActual").textContent = formatNumber(totalActual);
+
+    const totalGap = totalActual - totalPlanned;
+    const totalAttainment = totalPlanned > 0 ? (totalActual / totalPlanned) * 100 : 0;
+
+    document.getElementById("totalGap").textContent = formatNumber(totalGap);
+    const gapDeltaEl = document.getElementById("totalGapDelta");
+    gapDeltaEl.classList.remove("positive", "negative");
+
+    if (totalGap > 0) {
+      gapDeltaEl.textContent = "Ahead of plan";
+      gapDeltaEl.classList.add("positive");
+    } else if (totalGap < 0) {
+      gapDeltaEl.textContent = "Behind plan";
+      gapDeltaEl.classList.add("negative");
+    } else {
+      gapDeltaEl.textContent = "On plan";
+    }
+
+    document.getElementById("attainmentPercent").textContent =
+      totalPlanned > 0 ? totalAttainment.toFixed(1) + "%" : "0%";
+
+    const capped = Math.max(0, Math.min(totalAttainment, 130));
+    document.getElementById("progressFill").style.width = capped + "%";
+    document.getElementById("progressLabel").textContent =
+      totalPlanned > 0 ? totalAttainment.toFixed(1) + "%" : "0%";
+
+  }
+
+  function attachListeners() {
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+      input.addEventListener("input", recalc);
+    });
+  }
+
+  function setDateTag() {
+    const tag = document.getElementById("currentDateTag");
+    const now = new Date();
+    const formatted = now.toLocaleDateString("en-GB", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+    tag.textContent = formatted;
+  }
+
+  buildTable();
+  attachListeners();
+  setDateTag();
+  recalc();
+</script>
+</body>
+</html>
