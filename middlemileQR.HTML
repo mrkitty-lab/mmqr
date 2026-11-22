@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- MM QR is hidden until its single page-load access decision succeeds. -->
+    <style>
+      html:not(.mmqr-allowed) #mmqrApp { display: none !important; }
+      html.mmqr-allowed #siteAccessNotice { display: none !important; }
+      #siteAccessNotice {
+        position: fixed; inset: 0; z-index: 2147483647;
+        display: grid; place-items: center; padding: 24px 18px;
+        overflow-y: auto; background: #f2f2f7; color: #161925;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      }
+      #siteAccessNotice .access-card {
+        width: min(100%, 420px); padding: 36px 26px;
+        text-align: center; background: #fff; border-radius: 22px;
+        box-shadow: 0 12px 40px rgba(0,0,0,.07);
+      }
+      #siteAccessNotice .access-symbol {
+        display: grid; place-items: center; width: 66px; height: 66px;
+        margin: 0 auto 24px; color: #3d5187; background: #edf1ff;
+        border-radius: 20px; font-size: 29px;
+      }
+      #siteAccessNotice h1 { margin: 0; font-size: 28px; line-height: 1.17; }
+      #siteAccessNotice p { margin: 15px 0 0; color: #626a79; font-size: 15px; line-height: 1.6; }
+      #siteAccessNotice .hours {
+        margin: 23px 0 0; padding: 14px 10px;
+        background: #f2f4f8; border-radius: 12px;
+        color: #2c3650; font-size: 15px; font-weight: 700;
+      }
+    </style>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>QR Dial Pad</title>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            min-height: 100%;
+            background: #f2f2f7;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "SF Pro Display", "SF Pro Text",
+                         Helvetica, Arial, sans-serif;
+            color: #111;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100dvh;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100dvh;
+            padding:
+                max(20px, env(safe-area-inset-top))
+                18px
+                max(20px, env(safe-area-inset-bottom))
+                18px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .qr-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 300px;
+            margin-bottom: 12px;
+        }
+
+        #qrcode {
+            width: 240px;
+            height: 240px;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
+
+            box-shadow:
+                0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            width: 100% !important;
+            height: 100% !important;
+            object-fit: contain;
+        }
+
+        .placeholder {
+            color: #8e8e93;
+            font-size: 15px;
+            text-align: center;
+        }
+
+
+        .number-display {
+            width: 100%;
+            height: 58px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 14px;
+
+            background: white;
+            border-radius: 16px;
+
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: 10px;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .number-display.empty {
+            color: #c7c7cc;
+            letter-spacing: 3px;
+        }
+
+
+        .dial-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+
+            width: 100%;
+        }
+
+        .key {
+            border: none;
+            outline: none;
+
+            height: 68px;
+            border-radius: 18px;
+
+            background: white;
+
+            font-size: 28px;
+            font-weight: 500;
+
+            color: #111;
+
+            box-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.06);
+
+            touch-action: manipulation;
+
+            transition:
+                transform 0.08s ease,
+                background 0.08s ease;
+        }
+
+        .key:active {
+            transform: scale(0.94);
+            background: #e5e5ea;
+        }
+
+        .key .sub {
+            display: block;
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #8e8e93;
+            margin-top: -2px;
+        }
+
+
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+
+            margin-top: 12px;
+        }
+
+        .action-button {
+            height: 58px;
+
+            border: none;
+            border-radius: 18px;
+
+            font-size: 18px;
+            font-weight: 600;
+
+            touch-action: manipulation;
+        }
+
+        .clear {
+            background: #d1d1d6;
+            color: #111;
+        }
+
+        .enter {
+            background: #007aff;
+            color: white;
+        }
+
+        .action-button:active {
+            transform: scale(0.97);
+            opacity: 0.8;
+        }
+
+        button,
+        .number-display {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        @media (max-height: 700px) {
+            .qr-area {
+                min-height: 220px;
+            }
+
+            #qrcode {
+                width: 180px;
+                height: 180px;
+            }
+
+            .key {
+                height: 58px;
+            }
+
+            .number-display {
+                height: 50px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+<section id="siteAccessNotice" role="status" aria-live="polite" aria-labelledby="siteAccessTitle">
+  <div class="access-card">
+    <div class="access-symbol" aria-hidden="true">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+    </div>
+    <h1 id="siteAccessTitle">Checking access…</h1>
+    <p id="siteAccessMessage">Checking UK time before opening MM QR.</p>
+    <div class="hours">Available daily · 06:00–15:30 UK time</div>
+  </div>
+</section>
+
+
+<div class="app" id="mmqrApp" inert aria-hidden="true">
+
+    <div class="qr-area">
+        <div id="qrcode">
+            <div class="placeholder">
+                Enter 3 digits
+            </div>
+        </div>
+    </div>
+
+    <div id="numberDisplay"
+         class="number-display empty">
+        ---
+    </div>
+
+    <div class="dial-pad">
+
+        <button class="key" data-digit="1">
+            1
+        </button>
+
+        <button class="key" data-digit="2">
+            2
+            <span class="sub">ABC</span>
+        </button>
+
+        <button class="key" data-digit="3">
+            3
+            <span class="sub">DEF</span>
+        </button>
+
+        <button class="key" data-digit="4">
+            4
+            <span class="sub">GHI</span>
+        </button>
+
+        <button class="key" data-digit="5">
+            5
+            <span class="sub">JKL</span>
+        </button>
+
+        <button class="key" data-digit="6">
+            6
+            <span class="sub">MNO</span>
+        </button>
+
+        <button class="key" data-digit="7">
+            7
+            <span class="sub">PQRS</span>
+        </button>
+
+        <button class="key" data-digit="8">
+            8
+            <span class="sub">TUV</span>
+        </button>
+
+        <button class="key" data-digit="9">
+            9
+            <span class="sub">WXYZ</span>
+        </button>
+
+        <button class="key" data-digit="0">
+            0
+        </button>
+
+    </div>
+
+    <div class="actions">
+
+        <button class="action-button clear"
+                id="clearButton">
+            Clear
+        </button>
+
+        <button class="action-button enter"
+                id="enterButton">
+            Enter
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+(() => {
+    "use strict";
+
+    // One access decision per document load. No interval, visibility, focus,
+    // history, or pageshow listeners. Refresh the page to re-evaluate.
+    const TIME_API = "https://timeapi.io/api/Time/current/zone?timeZone=Europe%2FLondon";
+    const TIMEOUT_MS = 4500;
+    const OPEN_MINUTES = 6 * 60;
+    const CLOSE_MINUTES = 15 * 60 + 30; // 15:30 is CLOSED
+    const app = document.getElementById("mmqrApp");
+    const heading = document.getElementById("siteAccessTitle");
+    const message = document.getElementById("siteAccessMessage");
+    let accessGranted = false;
+    let currentInput = "";
+
+    function validParts(year, month, day, hour, minute) {
+        if (![year, month, day, hour, minute].every(Number.isInteger) ||
+            year < 2000 || year > 9999 || month < 1 || month > 12 ||
+            day < 1 || day > 31 || hour < 0 || hour > 23 ||
+            minute < 0 || minute > 59) {
+            throw new Error("Invalid UK time fields");
+        }
+        const calendarDay = new Date(Date.UTC(year, month - 1, day)).getUTCDate();
+        if (calendarDay !== day) throw new Error("Invalid UK calendar date");
+        return { hour, minute };
+    }
+
+    async function readApiTime() {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+        try {
+            const response = await fetch(TIME_API, {
+                method: "GET", cache: "no-store",
+                headers: { Accept: "application/json" },
+                signal: controller.signal
+            });
+            if (!response.ok) throw new Error("Time API HTTP " + response.status);
+            const data = await response.json();
+            if (data.timeZone && data.timeZone !== "Europe/London") {
+                throw new Error("Unexpected time zone from API");
+            }
+            return validParts(data.year, data.month, data.day, data.hour, data.minute);
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    // Device fallback: use a timezone-aware formatter, NOT the device's
+    // local timezone (which may be anywhere). UK DST is handled automatically.
+    function readDeviceUkTime() {
+        const formatter = new Intl.DateTimeFormat("en-GB", {
+            timeZone: "Europe/London", year: "numeric", month: "2-digit",
+            day: "2-digit", hour: "2-digit", minute: "2-digit",
+            hourCycle: "h23"
+        });
+        const parts = {};
+        for (const part of formatter.formatToParts(new Date())) {
+            if (part.type !== "literal") parts[part.type] = Number(part.value);
+        }
+        return validParts(parts.year, parts.month, parts.day, parts.hour, parts.minute);
+    }
+
+    function isWithinWindow(time) {
+        const minutes = time.hour * 60 + time.minute;
+        return minutes >= OPEN_MINUTES && minutes < CLOSE_MINUTES;
+    }
+
+    function showUnavailable(detail) {
+        heading.textContent = "MM QR is unavailable";
+        message.textContent = detail;
+    }
+
+    function updateDisplay() {
+        const display = document.getElementById("numberDisplay");
+        if (currentInput.length === 0) {
+            display.textContent = "MM---";
+            display.classList.add("empty");
+        } else {
+            display.textContent = "MM" + currentInput;
+            display.classList.remove("empty");
+        }
+    }
+
+    function triggerHaptic() {
+        try {
+            if (typeof navigator.vibrate === "function") navigator.vibrate(10);
+            if (window.webkit?.messageHandlers?.haptic) {
+                window.webkit.messageHandlers.haptic.postMessage("tap");
+            }
+        } catch (_) { /* Haptics are optional. */ }
+    }
+
+    function generateQR(value) {
+        if (!accessGranted) return;
+        if (typeof window.QRCode !== "function") {
+            document.getElementById("qrcode").textContent = "QR generator unavailable — check your internet connection.";
+            return;
+        }
+        const container = document.getElementById("qrcode");
+        container.replaceChildren();
+        new QRCode(container, {
+            text: "MM" + value,
+            width: 216, height: 216,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+    }
+
+    function pressDigit(digit) {
+        if (!accessGranted || currentInput.length >= 3) return;
+        triggerHaptic();
+        currentInput += digit;
+        updateDisplay();
+        if (currentInput.length === 3) {
+            generateQR(currentInput);
+            setTimeout(() => {
+                currentInput = "";
+                updateDisplay();
+            }, 250);
+        }
+    }
+
+    function initializeQrTool() {
+        if (accessGranted) return;
+        accessGranted = true;
+        document.documentElement.classList.add("mmqr-allowed");
+        app.inert = false;
+        app.removeAttribute("aria-hidden");
+        document.querySelectorAll("[data-digit]").forEach(button => {
+            button.addEventListener("click", () => pressDigit(button.dataset.digit));
+        });
+        document.getElementById("clearButton").addEventListener("click", () => {
+            currentInput = "";
+            updateDisplay();
+        });
+        document.getElementById("enterButton").addEventListener("click", () => {
+            if (currentInput.length !== 3) return;
+            generateQR(currentInput);
+            currentInput = "";
+            updateDisplay();
+        });
+        updateDisplay();
+    }
+
+    async function checkAccessOnce() {
+        let time;
+        try {
+            time = await readApiTime();
+        } catch (apiError) {
+            // API offline, slow, blocked by CORS, or invalid: fallback once.
+            console.warn("UK time API unavailable; checking the device clock.", apiError);
+            try {
+                time = readDeviceUkTime();
+            } catch (deviceError) {
+                console.error("Device clock fallback also failed.", deviceError);
+                showUnavailable("Unable to verify UK time. Please refresh to try again.");
+                return;
+            }
+        }
+
+        if (isWithinWindow(time)) {
+            initializeQrTool();
+        } else {
+            showUnavailable("Access is restricted outside 06:00–15:30 UK time. Refresh during opening hours.");
+        }
+    }
+
+    // Exactly one call on this page load. There are no further time checks.
+    void checkAccessOnce();
+})();
+</script>
+
+</body>
+</html>
